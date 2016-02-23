@@ -36,7 +36,10 @@ class AsciiTable(object):
         return max_widths
 
     def text_length(self, text):
-        return len(text.encode(self.encoding))
+        if text:
+            return len(text.encode(self.encoding))
+        else:
+            return 0
 
     def set_justify(self, x, align):
         """align: left, right, center
