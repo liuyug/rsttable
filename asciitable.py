@@ -10,12 +10,8 @@ class AsciiTable(object):
     nrow = 0
     ncol = 0
 
-    def __repr__(self):
-        return '<Ascii Table: %s rows, %s cols>' % (
-            self.nrow, self.ncol
-        )
-
-    def __init__(self, data, header=True):
+    def __init__(self, data, header=True, encoding='ascii'):
+        self.encoding = encoding
         if header:
             self.header = data[0]
             self.data = data[1:]
@@ -26,6 +22,11 @@ class AsciiTable(object):
         self.nrow = len(self.data)
         self.ncol = len(self.data[0])
 
+    def __repr__(self):
+        return '<Ascii Table: %s rows, %s cols>' % (
+            self.nrow, self.ncol
+        )
+
     def calc_widths(self, data):
         max_widths = [0] * len(data[0])
         for row in data:
@@ -35,7 +36,7 @@ class AsciiTable(object):
         return max_widths
 
     def text_length(self, text):
-        return len(text.encode('gbk'))
+        return len(text.encode(self.encoding))
 
     def set_justify(self, x, align):
         """align: left, right, center
