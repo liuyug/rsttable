@@ -58,8 +58,8 @@ class AsciiTable(object):
                     text = '%s' % self.header[x]
                 else:
                     text = ''
-                w = self.text_length(text)
-                td = text.center(self.widths[x] - w)
+                fix = self.text_length(text) - len(text)
+                td = text.center(self.widths[x] - fix)
                 tr = '%s %s %s' % (tr, td, '|')
             t.append(tr)
             t.append(th_s)
@@ -74,13 +74,13 @@ class AsciiTable(object):
                         text = '%s' % row[x]
                     else:
                         text = ''
-                    w = self.text_length(text)
+                    fix = self.text_length(text) - len(text)
                     if self.data_justify[x] == 'left':
-                        td = text.ljust(self.widths[x] - w)
+                        td = text.ljust(self.widths[x] - fix)
                     elif self.data_justify[x] == 'right':
-                        td = text.rjust(self.widths[x] - w)
+                        td = text.rjust(self.widths[x] - fix)
                     elif self.data_justify[x] == 'center':
-                        td = text.center(self.widths[x] - w)
+                        td = text.center(self.widths[x] - fix)
                     tr = '%s %s %s' % (tr, td, '|')
                 t.append(tr)
                 t.append(tr_s)
