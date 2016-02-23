@@ -17,10 +17,10 @@ class AsciiTable(object):
             self.data = data[1:]
         else:
             self.data = data
+        self.nrow = len(self.data)
+        self.ncol = len(data[0])
         self.widths = self.calc_widths(data)
         self.data_justify = ['left'] * len(data[0])
-        self.nrow = len(self.data)
-        self.ncol = len(self.data[0])
 
     def __repr__(self):
         return '<Ascii Table: %s rows, %s cols>' % (
@@ -28,9 +28,9 @@ class AsciiTable(object):
         )
 
     def calc_widths(self, data):
-        max_widths = [0] * len(data[0])
+        max_widths = [0] * self.ncol
         for row in data:
-            for x in range(len(row)):
+            for x in range(self.ncol):
                 w = self.text_length(row[x])
                 max_widths[x] = max(w, max_widths[x])
         return max_widths
@@ -53,7 +53,7 @@ class AsciiTable(object):
         if self.header:
             t.append(th_s)
             tr = '|'
-            for x in range(len(self.header)):
+            for x in range(self.ncol):
                 if self.header[x] is not None:
                     text = '%s' % self.header[x]
                 else:
@@ -69,7 +69,7 @@ class AsciiTable(object):
         if self.data:
             for row in self.data:
                 tr = '|'
-                for x in range(len(row)):
+                for x in range(self.ncol):
                     if row[x] is not None:
                         text = '%s' % row[x]
                     else:
@@ -82,9 +82,14 @@ class AsciiTable(object):
                     elif self.data_justify[x] == 'center':
                         td = text.center(self.widths[x] - w)
                     tr = '%s %s %s' % (tr, td, '|')
-                for x in range(len(row), self.ncol):
-                    td = ' ' * self.widths[x]
-                    tr = '%s %s %s' % (tr, td, '|')
                 t.append(tr)
                 t.append(tr_s)
         return '\n'.join(t)
+
+
+if __name__ == '__main__':
+    chars = [chr(x + ord('a')) for x in range(0, 26)]
+    a = AsciiTable(chars)
+    print(a.table())
+    b = AsciiTable([chars])
+    print(b.table())
