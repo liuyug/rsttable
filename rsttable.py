@@ -2,7 +2,7 @@
 # -*- encoding:utf-8 -*-
 
 
-class AsciiTable(object):
+class RstTable(object):
     header = None
     data = None
     widths = None
@@ -23,7 +23,7 @@ class AsciiTable(object):
         self.data_justify = ['left'] * len(data[0])
 
     def __repr__(self):
-        return '<Ascii Table: %s rows, %s cols>' % (
+        return '<reStructedText Table: %s rows, %s cols>' % (
             self.nrow, self.ncol
         )
 
@@ -92,7 +92,7 @@ class AsciiTable(object):
 
 if __name__ == '__main__':
     chars = [chr(x + ord('a')) for x in range(0, 26)]
-    a = AsciiTable(chars)
+    a = RstTable(chars)
     print(a.table())
-    b = AsciiTable([chars])
+    b = RstTable([chars])
     print(b.table())

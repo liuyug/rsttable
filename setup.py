@@ -8,12 +8,12 @@ VERSION = "0.1.0"
 
 
 setup(
-    name="AsciiTable",
+    name="RstTable",
     version=VERSION,
-    description="format table to reStructedText Table",
-    url="https://github.com/liuyug/asciitable",
+    description="format data to reStructedText Table",
+    url="https://github.com/liuyug/rsttable",
     license="BSD",
     author="Yugang LIU",
     author_email="liuyug@gmail.com",
-    py_modules=["asciitable"]
+    py_modules=["rsttable"]
 )
