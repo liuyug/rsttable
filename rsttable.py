@@ -46,7 +46,10 @@ class RstTable(object):
         """
         self.data_justify[x] = align
 
-    def table(self):
+    def table(self, style=None):
+        """style:
+        nosep: no separater
+        """
         t = []
         tr_s = '+'
         for w in self.widths:
@@ -54,7 +57,10 @@ class RstTable(object):
         th_s = tr_s.replace('-', '=')
         # header
         if self.header:
-            t.append(th_s)
+            if style == 'nosep':
+                pass
+            else:
+                t.append(th_s)
             tr = '|'
             for x in range(self.ncol):
                 if self.header[x] is not None:
@@ -65,9 +71,15 @@ class RstTable(object):
                 td = text.center(self.widths[x] - fix)
                 tr = '%s %s %s' % (tr, td, '|')
             t.append(tr)
-            t.append(th_s)
+            if style == 'nosep':
+                pass
+            else:
+                t.append(th_s)
         else:
-            t.append(tr_s)
+            if style == 'nosep':
+                pass
+            else:
+                t.append(tr_s)
         # data
         if self.data:
             for row in self.data:
@@ -86,7 +98,10 @@ class RstTable(object):
                         td = text.center(self.widths[x] - fix)
                     tr = '%s %s %s' % (tr, td, '|')
                 t.append(tr)
-                t.append(tr_s)
+                if style == 'nosep':
+                    pass
+                else:
+                    t.append(tr_s)
         return '\n'.join(t)
 
 
