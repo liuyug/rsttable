@@ -25,6 +25,7 @@ class RstTable(object):
     _left_padding = ' '
     _right_padding = ' '
     _encoding = None
+    _null_char = ''
 
     def __init__(self, data, header=True, encoding=None):
         self._encoding = encoding
@@ -81,10 +82,10 @@ class RstTable(object):
             columns = [columns]
         for column in columns:
             item = self._header[column]
-            w = self.get_text_length(item)
+            mb = self.cjk_count(item)
+            w = self.get_text_length(item) + mb
             self._header[column]['width'] = max(
                 w, self._header[column]['width'])
-            mb = self.cjk_count(item)
             item['MB'] = mb
         for column in columns:
             for row in range(self.row_count()):
@@ -106,7 +107,11 @@ class RstTable(object):
         return count
 
     def get_text(self, item):
-        text = item['format'] % (item['data'])
+        data = item['data']
+        if data is None:
+            text = self._null_char
+        else:
+            text = item['format'] % data
         if self._encoding:
             text = text.encode(self._encoding)
         return text
