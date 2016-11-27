@@ -20,7 +20,6 @@ CjkRange = (
 class RstTable(object):
     _header = None
     _data = None
-    _header_show = True
     _widths = None
     _left_padding = ' '
     _right_padding = ' '
@@ -29,30 +28,9 @@ class RstTable(object):
 
     def __init__(self, data, header=True, encoding=None):
         self._encoding = encoding
-        self._header_show = header
-        self._header = []
+        self._header = header
         self._data = []
         fmt = '%s'
-        if self._header_show:
-            for item in data[0]:
-                self._header.append({
-                    'data': item,
-                    'format': fmt,
-                    'width': 0,
-                    'align': 'center',
-                    'MB': 0,
-                })
-            data = data[1:]
-        else:
-            for item in data[0]:
-                self._header.append({
-                    'data': None,
-                    'format': fmt,
-                    'width': 0,
-                    'align': 'left',
-                    'MB': 0,
-                })
-
         for record in data:
             row = []
             for item in record:
@@ -63,6 +41,10 @@ class RstTable(object):
                     'MB': 0,
                 })
             self._data.append(row)
+        if self._header:
+            for item in self._data[0]:
+                item['align'] = 'center'
+        self._widths = [0] * len(self._data[0])
 
     def __repr__(self):
         return '<reStructedText Table: %s rows, %s cols>' % (
@@ -73,7 +55,7 @@ class RstTable(object):
         return len(self._data)
 
     def column_count(self):
-        return len(self._header)
+        return len(self._data[0])
 
     def calc_widths(self, columns=None):
         if columns is None:
@@ -81,24 +63,16 @@ class RstTable(object):
         elif isinstance(columns, int):
             columns = [columns]
         for column in columns:
-            item = self._header[column]
-            mb = self.cjk_count(item)
-            w = self.get_text_length(item) + mb
-            self._header[column]['width'] = max(
-                w, self._header[column]['width'])
-            item['MB'] = mb
-        for column in columns:
             for row in range(self.row_count()):
                 item = self._data[row][column]
-                mb = self.cjk_count(item)
-                w = self.get_text_length(item) + mb
-                self._header[column]['width'] = max(
-                    w, self._header[column]['width'])
+                mb = self.cjk_count(self.get_item_text(item))
+                w = self.get_item_text_length(item) + mb
+                self._widths[column] = max(w, self._widths[column])
                 item['MB'] = mb
 
-    def cjk_count(self, item):
+    @staticmethod
+    def cjk_count(text):
         count = 0
-        text = self.get_text(item)
         for ch in text:
             for b, e in CjkRange:
                 if b <= ord(ch) <= e:
@@ -106,7 +80,7 @@ class RstTable(object):
                     break
         return count
 
-    def get_text(self, item):
+    def get_item_text(self, item):
         data = item['data']
         if data is None:
             text = self._null_char
@@ -116,17 +90,19 @@ class RstTable(object):
             text = text.encode(self._encoding)
         return text
 
-    def get_text_length(self, item):
-        text = self.get_text(item)
+    def get_item_text_length(self, item):
+        text = self.get_item_text(item)
         return len(text)
 
     def set_align(self, align, rows=None, columns=None):
         """align: left, right, center
         """
-        rows = rows or self.row_count()
+        if rows is None:
+            rows = range(self.row_count())
         if isinstance(rows, int):
             rows = [rows]
-        columns = columns or self.column_count()
+        if columns is None:
+            columns = range(self.column_count())
         if isinstance(columns, int):
             columns = [columns]
         for row in rows:
@@ -134,10 +110,12 @@ class RstTable(object):
                 self._data[row][column]['align'] = align
 
     def set_format(self, fmt, rows=None, columns=None):
-        rows = rows or self.row_count()
+        if rows is None:
+            rows = range(self.row_count())
         if isinstance(rows, int):
             rows = [rows]
-        columns = columns or self.column_count()
+        if columns is None:
+            columns = range(self.column_count())
         if isinstance(columns, int):
             columns = [columns]
 
@@ -145,28 +123,24 @@ class RstTable(object):
             for column in columns:
                 self._data[row][column]['format'] = fmt
 
-    def get_view_header_item(self, column):
-        item = self._header[column]
-        width = item['width'] - item['MB']
+    def get_view_data_item(self, row, column):
+        item = self._data[row][column]
+        width = self._widths[column] - item['MB']
         align = AlignSymbol.get(item['align'])
-        text = self.get_text(item)
+        text = self.get_item_text(item)
         view = u'{:{align}{width}}'.format(text, align=align, width=width)
         return view
 
-    def get_view_data_item(self, row, column):
+    def get_data(self, row, column, role='data'):
         item = self._data[row][column]
-        width = self._header[column]['width'] - item['MB']
-        align = AlignSymbol.get(item['align'])
-        text = self.get_text(item)
-        view = u'{:{align}{width}}'.format(text, align=align, width=width)
-        return view
+        return item.get(role)
 
     def table(self, style=None):
         """style:
         nosep: no separater
         """
         self.calc_widths()
-        widths = [h['width'] for h in self._header]
+        widths = self._widths
         t = []
         th_s = ['+']
         tr_s = ['+']
@@ -178,7 +152,7 @@ class RstTable(object):
                 len(self._left_padding) + w + len(self._right_padding)))
             th_s.append('+')
         # header
-        if self._header_show:
+        if self._header:
             if style == 'nosep':
                 pass
             else:
@@ -186,7 +160,7 @@ class RstTable(object):
             tr = ['|']
             for col in range(self.column_count()):
                 tr.append(self._left_padding)
-                tr.append(self.get_view_header_item(col))
+                tr.append(self.get_view_data_item(0, col))
                 tr.append(self._right_padding)
                 tr.append('|')
             t.append(''.join(tr))
@@ -200,7 +174,11 @@ class RstTable(object):
             else:
                 t.append(''.join(tr_s))
         # data
-        for row in range(self.row_count()):
+        if self._header:
+            row_begin = 1
+        else:
+            row_begin = 0
+        for row in range(row_begin, self.row_count()):
             tr = ['|']
             for column in range(self.column_count()):
                 tr.append(self._left_padding)
