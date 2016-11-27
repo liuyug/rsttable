@@ -131,7 +131,7 @@ class RstTable(object):
             columns = [columns]
         for row in rows:
             for column in columns:
-                self._data[row][columns]['align'] = align
+                self._data[row][column]['align'] = align
 
     def set_format(self, fmt, rows=None, columns=None):
         rows = rows or self.row_count()
@@ -143,7 +143,7 @@ class RstTable(object):
 
         for row in rows:
             for column in columns:
-                self._data[row][columns]['format'] = fmt
+                self._data[row][column]['format'] = fmt
 
     def get_view_header_item(self, column):
         item = self._header[column]
