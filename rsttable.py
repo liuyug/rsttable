@@ -135,6 +135,12 @@ class RstTable(object):
         item = self._data[row][column]
         return item.get(role)
 
+    def csv(self, filename):
+        with open(filename, 'wt') as f:
+            for row in self._data:
+                line = ','.join([r['data'] for r in row]) + '\n'
+                f.write(line)
+
     def table(self, style=None):
         """style:
         nosep: no separater
@@ -197,5 +203,7 @@ if __name__ == '__main__':
     chars = [chr(x + ord('a')) for x in range(0, 26)]
     a = RstTable(chars)
     print(a.table())
+    a.csv('out_a.csv')
     b = RstTable([chars])
     print(b.table())
+    b.csv('out_b.csv')
